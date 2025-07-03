@@ -1,155 +1,129 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Калькулятор парковки</title>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Oswald', sans-serif;
-      padding: 20px;
-      max-width: 500px;
-      margin: auto;
-    }
-    h2 {
-      color: #3e613e;
-      text-align: center;
-      font-size: 24px;
-      font-weight: normal;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input, button {
-      width: 100%;
-      padding: 8px;
-      margin: 5px 0 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-family: 'Oswald', sans-serif;
-    }
-    button {
-      background-color: #3e613e;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #355335;
-    }
-    .result, .details {
-      margin-top: 20px;
-      font-size: 18px;
-      color: #333;
-    }
-    .details {
-      font-size: 14px;
-      color: #555;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор парковки</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400&display=swap" rel="stylesheet">
+    <style>
+        h2 {
+            color: #3e613e;
+            font-size: 24px;
+            font-weight: normal;
+            text-align: center;
+        }
+        body {
+            font-family: 'Oswald', sans-serif;
+            font-weight: normal;
+            margin: 0;
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 5px;
+            margin: 5px 0 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #3e613e;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #355335;
+        }
+        .result, .details {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        .details {
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
 
-  <h2>Калькулятор стоимости парковки</h2>
+    <h2>Калькулятор стоимости парковки</h2>
 
-  <label for="entry">Дата и время заезда:</label>
-  <input type="datetime-local" id="entry">
+    <label for="entry">Дата и время заезда:</label>
+    <input type="datetime-local" id="entry">
 
-  <label for="exit">Дата и время выезда:</label>
-  <input type="datetime-local" id="exit">
+    <label for="exit">Дата и время выезда:</label>
+    <input type="datetime-local" id="exit">
 
-  <button onclick="calculateParking()">Рассчитать</button>
+    <button onclick="calculateParking()">Рассчитать</button>
 
-  <div class="result" id="result"></div>
-  <div class="details" id="details"></div>
+    <div class="result" id="result"></div>
+    <div class="details" id="details"></div>
 
-  <hr>
+    <script>
+        function calculateParking() {
+            let entryTime = new Date(document.getElementById("entry").value);
+            let exitTime = new Date(document.getElementById("exit").value);
 
-  <h2>Оставьте ваши контакты</h2>
+            if (!entryTime || !exitTime || isNaN(entryTime) || isNaN(exitTime)) {
+                document.getElementById("result").innerHTML = "Выберите корректные дату и время!";
+                document.getElementById("details").innerHTML = "";
+                return;
+            }
 
-  <form id="contact-form" action="https://example.com/submit" method="post">
-    <label for="name">Имя:</label>
-    <input type="text" id="name" name="name" required>
+            if (exitTime <= entryTime) {
+                document.getElementById("result").innerHTML = "Дата выезда должна быть позже даты заезда!";
+                document.getElementById("details").innerHTML = "";
+                return;
+            }
 
-    <label for="phone">Телефон:</label>
-    <input type="tel" id="phone" name="phone" required>
+            let diffMs = exitTime - entryTime;
+            let diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24)); 
 
-    <!-- Скрытые поля -->
-    <input type="hidden" id="entry-hidden" name="entry_time">
-    <input type="hidden" id="exit-hidden" name="exit_time">
+            let totalCost = 0;
+            let daysAt250 = 0, daysAt200 = 0, daysAt150 = 0, daysAt100 = 0;
 
-    <button type="submit">Отправить</button>
-  </form>
+            if (diffDays <= 10) {
+                daysAt250 = diffDays;
+            } else if (diffDays <= 20) {
+                daysAt250 = 10;
+                daysAt200 = diffDays - 10;
+            } else if (diffDays <= 30) {
+                daysAt250 = 10;
+                daysAt200 = 10;
+                daysAt150 = diffDays - 20;
+            } else {
+                daysAt250 = 10;
+                daysAt200 = 10;
+                daysAt150 = 10;
+                daysAt100 = diffDays - 30;
+            }
 
-  <script>
-    function calculateParking() {
-      let entryTime = new Date(document.getElementById("entry").value);
-      let exitTime = new Date(document.getElementById("exit").value);
+            totalCost = (daysAt250 * 250) + (daysAt200 * 200) + (daysAt150 * 150) + (daysAt100 * 100);
 
-      if (!entryTime || !exitTime || isNaN(entryTime) || isNaN(exitTime)) {
-        document.getElementById("result").innerHTML = "Выберите корректные дату и время!";
-        document.getElementById("details").innerHTML = "";
-        return;
-      }
+            document.getElementById("result").innerHTML = 
+                `Количество суток: ${diffDays} <br> 
+                Итоговая стоимость: ${totalCost} руб.`;
 
-      if (exitTime <= entryTime) {
-        document.getElementById("result").innerHTML = "Дата выезда должна быть позже даты заезда!";
-        document.getElementById("details").innerHTML = "";
-        return;
-      }
+            let detailsText = "Расчёт: <br>";
+            if (daysAt250 > 0) detailsText += `${daysAt250} × 250 руб = ${daysAt250 * 250} руб<br>`;
+            if (daysAt200 > 0) detailsText += `${daysAt200} × 200 руб = ${daysAt200 * 200} руб<br>`;
+            if (daysAt150 > 0) detailsText += `${daysAt150} × 150 руб = ${daysAt150 * 150} руб<br>`;
+            if (daysAt100 > 0) detailsText += `${daysAt100} × 100 руб = ${daysAt100 * 100} руб<br>`;
 
-      let diffMs = exitTime - entryTime;
-      let diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24)); 
-
-      let totalCost = 0;
-      let daysAt250 = 0, daysAt200 = 0, daysAt150 = 0, daysAt100 = 0;
-
-      if (diffDays <= 10) {
-        daysAt250 = diffDays;
-      } else if (diffDays <= 20) {
-        daysAt250 = 10;
-        daysAt200 = diffDays - 10;
-      } else if (diffDays <= 30) {
-        daysAt250 = 10;
-        daysAt200 = 10;
-        daysAt150 = diffDays - 20;
-      } else {
-        daysAt250 = 10;
-        daysAt200 = 10;
-        daysAt150 = 10;
-        daysAt100 = diffDays - 30;
-      }
-
-      totalCost = (daysAt250 * 250) + (daysAt200 * 200) + (daysAt150 * 150) + (daysAt100 * 100);
-
-      document.getElementById("result").innerHTML = 
-        `Количество суток: ${diffDays} <br> 
-         Итоговая стоимость: ${totalCost} руб.`;
-
-      let detailsText = "Расчёт: <br>";
-      if (daysAt250 > 0) detailsText += `${daysAt250} × 250 руб = ${daysAt250 * 250} руб<br>`;
-      if (daysAt200 > 0) detailsText += `${daysAt200} × 200 руб = ${daysAt200 * 200} руб<br>`;
-      if (daysAt150 > 0) detailsText += `${daysAt150} × 150 руб = ${daysAt150 * 150} руб<br>`;
-      if (daysAt100 > 0) detailsText += `${daysAt100} × 100 руб = ${daysAt100 * 100} руб<br>`;
-
-      document.getElementById("details").innerHTML = detailsText;
-    }
-
-    // Автозаполнение скрытых полей формы
-    function updateHiddenDates() {
-      const entryValue = document.getElementById("entry").value;
-      const exitValue = document.getElementById("exit").value;
-      document.getElementById("entry-hidden").value = entryValue;
-      document.getElementById("exit-hidden").value = exitValue;
-    }
-
-    document.getElementById("entry").addEventListener("change", updateHiddenDates);
-    document.getElementById("exit").addEventListener("change", updateHiddenDates);
-  </script>
+            document.getElementById("details").innerHTML = detailsText;
+        }
+    </script>
 
 </body>
 </html>
